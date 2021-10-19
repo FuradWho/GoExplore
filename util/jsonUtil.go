@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func GetEnvelopeFromBlock (data []byte) (*common.Envelope , error) {
+func GetEnvelopeFromBlock(data []byte) (*common.Envelope, error) {
 
 	env := &common.Envelope{}
 
@@ -21,53 +21,53 @@ func GetEnvelopeFromBlock (data []byte) (*common.Envelope , error) {
 		log.Printf("Failed to block unmarshal :%s \n", err)
 	}
 
-	return env,nil
+	return env, nil
 }
 
-func GetTxFromEnvelopeDeep(rawEnvelope *common.Envelope)(*models.Transaction , error)  {
+func GetTxFromEnvelopeDeep(rawEnvelope *common.Envelope) (*models.Transaction, error) {
 
 	rawPayload := &common.Payload{}
-	err := proto.Unmarshal(rawEnvelope.Payload,rawPayload)
+	err := proto.Unmarshal(rawEnvelope.Payload, rawPayload)
 	if err != nil {
-		log.Printf("Failed to unmarshal Envelope's payload :%s \n",err)
+		log.Printf("Failed to unmarshal Envelope's payload :%s \n", err)
 	}
 
 	channelHeader := &common.ChannelHeader{}
-	err = proto.Unmarshal(rawPayload.Header.ChannelHeader,channelHeader)
+	err = proto.Unmarshal(rawPayload.Header.ChannelHeader, channelHeader)
 	if err != nil {
-		log.Printf("Failed to unmarshal Payload's ChannelHeader :%s \n",err)
+		log.Printf("Failed to unmarshal Payload's ChannelHeader :%s \n", err)
 	}
 
 	transaction := &peer.Transaction{}
-	err = proto.Unmarshal(rawPayload.Data,transaction)
+	err = proto.Unmarshal(rawPayload.Data, transaction)
 	if err != nil {
-		log.Printf("Failed to unmarshal rawPayload's Data :%s \n",err)
+		log.Printf("Failed to unmarshal rawPayload's Data :%s \n", err)
 	}
 
 	var transactionActionList []*models.TransactionAction
 
-	for i := range transaction.Actions{
+	for i := range transaction.Actions {
 		transactionAction, err := GetTxActionFromTxDeep(transaction.Actions[i])
 		if err != nil {
-			log.Printf("Failed to unmarshal transactionAction :%s \n",err)
+			log.Printf("Failed to unmarshal transactionAction :%s \n", err)
 		}
 		transactionAction.TxId = channelHeader.TxId
 		transactionAction.Type = string(channelHeader.Type)
-		transactionAction.Timestamp = time.Unix(channelHeader.Timestamp.Seconds,0).Format("2006-01-02 15:04:05")
+		transactionAction.Timestamp = time.Unix(channelHeader.Timestamp.Seconds, 0).Format("2006-01-02 15:04:05")
 		transactionAction.ChannelId = channelHeader.ChannelId
-		transactionActionList = append(transactionActionList,transactionAction)
+		transactionActionList = append(transactionActionList, transactionAction)
 	}
 
 	transactionInfo := models.Transaction{TransactionActionList: transactionActionList}
 	return &transactionInfo, nil
 }
 
-func GetTxActionFromTxDeep( txAction *peer.TransactionAction)(*models.TransactionAction , error){
+func GetTxActionFromTxDeep(txAction *peer.TransactionAction) (*models.TransactionAction, error) {
 
 	chaincodeActionPayload := &peer.ChaincodeActionPayload{}
-	err := proto.Unmarshal(txAction.Payload,chaincodeActionPayload)
+	err := proto.Unmarshal(txAction.Payload, chaincodeActionPayload)
 	if err != nil {
-		log.Printf("Failed to unmarshal chaincodeActionPayload :%s \n",err)
+		log.Printf("Failed to unmarshal chaincodeActionPayload :%s \n", err)
 	}
 
 	proposalResponsePayload := &peer.ProposalResponsePayload{}
@@ -79,89 +79,85 @@ func GetTxActionFromTxDeep( txAction *peer.TransactionAction)(*models.Transactio
 	var writeSetList []string
 
 	if chaincodeActionPayload.GetAction() != nil {
-		err = proto.Unmarshal(chaincodeActionPayload.Action.ProposalResponsePayload,proposalResponsePayload)
+		err = proto.Unmarshal(chaincodeActionPayload.Action.ProposalResponsePayload, proposalResponsePayload)
 		if err != nil {
-			log.Printf("Failed to unmarshal proposalResponsePayload :%s \n",err)
+			log.Printf("Failed to unmarshal proposalResponsePayload :%s \n", err)
 		}
 
-		err = proto.Unmarshal(proposalResponsePayload.Extension,chaincodeAction)
+		err = proto.Unmarshal(proposalResponsePayload.Extension, chaincodeAction)
 		if err != nil {
-			log.Printf("Failed to unmarshal chaincodeAction :%s \n",err)
+			log.Printf("Failed to unmarshal chaincodeAction :%s \n", err)
 		}
 
 		chaincodeID = chaincodeAction.ChaincodeId.Name
 
 		txReadWriteSet := &rwset.TxReadWriteSet{}
-		err = proto.Unmarshal(chaincodeAction.Results,txReadWriteSet)
+		err = proto.Unmarshal(chaincodeAction.Results, txReadWriteSet)
 		if err != nil {
-			log.Printf("Failed to unmarshal txReadWriteSet :%s \n",err)
+			log.Printf("Failed to unmarshal txReadWriteSet :%s \n", err)
 		}
 
-		for i := range txReadWriteSet.NsRwset{
+		for i := range txReadWriteSet.NsRwset {
 			readWriteSet := &kvrwset.KVRWSet{}
 
-			err = proto.Unmarshal(txReadWriteSet.NsRwset[i].Rwset,readWriteSet)
+			err = proto.Unmarshal(txReadWriteSet.NsRwset[i].Rwset, readWriteSet)
 			if err != nil {
-				log.Printf("Failed to unmarshal readWriteSet :%s \n",err)
+				log.Printf("Failed to unmarshal readWriteSet :%s \n", err)
 			}
 
-			for i := range readWriteSet.Reads{
-				readSetJsonStr ,err := json.Marshal(readWriteSet.Reads[i])
+			for i := range readWriteSet.Reads {
+				readSetJsonStr, err := json.Marshal(readWriteSet.Reads[i])
 				if err != nil {
-					log.Printf("Failed to unmarshal readSetJsonStr :%s \n",err)
+					log.Printf("Failed to unmarshal readSetJsonStr :%s \n", err)
 				}
-				readSetList = append(readSetList , string(readSetJsonStr))
+				readSetList = append(readSetList, string(readSetJsonStr))
 
 			}
-			for i := range readWriteSet.Writes{
+			for i := range readWriteSet.Writes {
 
 				writeSetItem := map[string]interface{}{
-					"key":readWriteSet.Writes[i].GetKey(),
-					"Value":string(readWriteSet.Writes[i].GetValue()),
-					"IsDelete":readWriteSet.Writes[i].GetIsDelete(),
+					"key":      readWriteSet.Writes[i].GetKey(),
+					"Value":    string(readWriteSet.Writes[i].GetValue()),
+					"IsDelete": readWriteSet.Writes[i].GetIsDelete(),
 				}
 
-				writeSetJsonStr ,err := json.Marshal(writeSetItem)
+				writeSetJsonStr, err := json.Marshal(writeSetItem)
 				if err != nil {
-					log.Printf("Failed to unmarshal writeSetJsonStr :%s \n",err)
+					log.Printf("Failed to unmarshal writeSetJsonStr :%s \n", err)
 				}
-				writeSetList = append(writeSetList , string(writeSetJsonStr))
+				writeSetList = append(writeSetList, string(writeSetJsonStr))
 			}
 
-			readWriteSetList = append(readWriteSetList,readWriteSet)
-			nsReadWriteSetList = append(nsReadWriteSetList,txReadWriteSet.NsRwset[i])
+			readWriteSetList = append(readWriteSetList, readWriteSet)
+			nsReadWriteSetList = append(nsReadWriteSetList, txReadWriteSet.NsRwset[i])
 		}
-	}else{
+	} else {
 		chaincodeID = "none"
 	}
 
 	var endorsements []string
 
-	if chaincodeActionPayload.Action.GetEndorsements() != nil{
+	if chaincodeActionPayload.Action.GetEndorsements() != nil {
 
-		for i := range chaincodeActionPayload.Action.GetEndorsements(){
+		for i := range chaincodeActionPayload.Action.GetEndorsements() {
 
 			endorser := &msp.SerializedIdentity{}
-			err = proto.Unmarshal(chaincodeActionPayload.Action.Endorsements[i].Endorser,endorser)
+			err = proto.Unmarshal(chaincodeActionPayload.Action.Endorsements[i].Endorser, endorser)
 			if err != nil {
-				log.Printf("Failed to unmarshal endorser :%s \n",err)
+				log.Printf("Failed to unmarshal endorser :%s \n", err)
 			}
 			endorsements = append(endorsements, endorser.Mspid)
 		}
 	}
 
-
 	txActionInfo := models.TransactionAction{
 
 		Endorsements: endorsements,
 		ChaincodeId:  chaincodeID,
-		ReadSetList: readSetList,
+		ReadSetList:  readSetList,
 		WriteSetList: writeSetList,
 	}
 
 	return &txActionInfo, nil
 
 }
-
-
-

@@ -8,7 +8,7 @@ import (
 )
 
 func GetLastesBlocksInfo(context *context.Context) {
-	blocks ,err :=common.QueryLastesBlocksInfo()
+	blocks, err := common.QueryLastesBlocksInfo()
 	if err != nil {
 		log.Println(err)
 	}
@@ -16,20 +16,19 @@ func GetLastesBlocksInfo(context *context.Context) {
 }
 
 func QueryAllBlocksInfo(context *context.Context) {
-	blocks ,err :=common.QueryAllBlocksInfo()
+	blocks, err := common.QueryAllBlocksInfo()
 	if err != nil {
 		log.Println(err)
 	}
 	context.JSON(blocks)
 }
 
-
 func QueryTxByTxId(context *context.Context) {
 
 	txId := context.URLParam("txId")
 	if txId == "" {
 		context.JSON("fail")
-	}else{
+	} else {
 		transactions, err := common.QueryTxByTxId(txId)
 		if err != nil {
 			log.Println(err)
@@ -39,12 +38,12 @@ func QueryTxByTxId(context *context.Context) {
 	}
 }
 
-func QueryTxByTxIdJsonStr(context *context.Context){
+func QueryTxByTxIdJsonStr(context *context.Context) {
 
 	txId := context.URLParam("txId")
 	if txId == "" {
 		context.JSON("fail")
-	}else{
+	} else {
 		transactions, err := common.QueryTxByTxId(txId)
 		if err != nil {
 			log.Println(err)
@@ -58,9 +57,9 @@ func QueryBlockByBlockNum(context *context.Context) {
 	blockNum := context.URLParam("blockNum")
 	if blockNum == "" {
 		context.JSON("fail")
-	}else{
+	} else {
 
-		num, _ := strconv.ParseInt(blockNum,10,64)
+		num, _ := strconv.ParseInt(blockNum, 10, 64)
 		transactions, err := common.QueryBlockByBlockNum(num)
 		if err != nil {
 			log.Println(err)

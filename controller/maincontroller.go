@@ -5,31 +5,26 @@ import (
 	"goExplore/service"
 )
 
-func StartIris()  {
+func StartIris() {
 	app := iris.New()
 
 	blocksApi := app.Party("/blocks")
 	{
 		blocksApi.Use(iris.Compression)
 
-		blocksApi.Get("/QueryLastesBlocksInfo",service.GetLastesBlocksInfo)
-		blocksApi.Get("/QueryBlockByBlockNum",service.QueryBlockByBlockNum)
-		blocksApi.Get("/QueryAllBlocksInfo",service.QueryAllBlocksInfo)
+		blocksApi.Get("/QueryLastesBlocksInfo", service.GetLastesBlocksInfo)
+		blocksApi.Get("/QueryBlockByBlockNum", service.QueryBlockByBlockNum)
+		blocksApi.Get("/QueryAllBlocksInfo", service.QueryAllBlocksInfo)
 
 	}
 
 	txsApi := app.Party("/tx")
 	{
 		txsApi.Use(iris.Compression)
-		txsApi.Get("/QueryTxByTxId",service.QueryTxByTxId)
-		txsApi.Get("/QueryTxByTxIdJsonStr",service.QueryTxByTxIdJsonStr)
+		txsApi.Get("/QueryTxByTxId", service.QueryTxByTxId)
+		txsApi.Get("/QueryTxByTxIdJsonStr", service.QueryTxByTxIdJsonStr)
 	}
 
 	app.Listen(":9090")
 
 }
-
-
-
-
-

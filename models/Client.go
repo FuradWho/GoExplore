@@ -15,8 +15,8 @@ type Client struct {
 
 	//sdk 客户端
 	SDK *fabsdk.FabricSDK
-	Rc *resmgmt.Client
-	Cc *channel.Client
+	Rc  *resmgmt.Client
+	Cc  *channel.Client
 
 	// 链码信息
 	ChannelID     string //通道名

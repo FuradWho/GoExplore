@@ -8,9 +8,6 @@ const (
 	Admin         = "Admin"
 	User          = "User1"
 	ChaincodePath = "github.com/hyperledger/fabric-samples/chaincode/chaincode_example02/go"
-	ChannelID   = "mychannel"
-	ChaincodeID = "example"
-
-
-
+	ChannelID     = "mychannel"
+	ChaincodeID   = "example"
 )

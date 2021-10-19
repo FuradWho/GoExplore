@@ -7,10 +7,11 @@ import (
 )
 
 func main() {
+	// start a new chain explore service
 	orgGoClient := common.InitChainExploreService(localConfig.OrgGoConfig, localConfig.Org1, localConfig.Admin, localConfig.User)
 
+	// start the web controller
 	controller.StartIris()
 
-	// Close: 关闭并释放有SDK维护的缓存和连接
 	defer orgGoClient.SDK.Close()
 }

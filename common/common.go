@@ -21,7 +21,7 @@ var mainSDK *fabsdk.FabricSDK
 var ledgerClient *ledger.Client
 
 // InitChainExploreService Init ChainExplore Client (ledger client)
-func InitChainExploreService(cfg, org, admin, user string) *models.Client{
+func InitChainExploreService(cfg, org, admin, user string) *models.Client {
 
 	log.Println("Initialize the client")
 
@@ -41,7 +41,7 @@ func InitChainExploreService(cfg, org, admin, user string) *models.Client{
 	// create fabsdk SDk
 	mainSDK, err = fabsdk.New(config.FromFile(client.ConfigPath))
 	if err != nil {
-		log.Panicf("Failed to create an new SDK:%s\n",err)
+		log.Panicf("Failed to create an new SDK:%s\n", err)
 	}
 
 	client.SDK = mainSDK
@@ -49,9 +49,9 @@ func InitChainExploreService(cfg, org, admin, user string) *models.Client{
 	// get channel context
 	userChannelContext := mainSDK.ChannelContext(client.ChannelID, fabsdk.WithUser(client.OrgUser))
 	// ledger client
-	ledgerClient,err = ledger.New(userChannelContext)
+	ledgerClient, err = ledger.New(userChannelContext)
 	if err != nil {
-		log.Printf("Failed to create an new ledgerClient:%s\n",err)
+		log.Printf("Failed to create an new ledgerClient:%s\n", err)
 	}
 	log.Println("Success to create an new ledgerClient ")
 
@@ -60,61 +60,61 @@ func InitChainExploreService(cfg, org, admin, user string) *models.Client{
 }
 
 // QueryLedgerInfo Query ledger info
-func QueryLedgerInfo() (*fab.BlockchainInfoResponse, error)  {
+func QueryLedgerInfo() (*fab.BlockchainInfoResponse, error) {
 
 	log.Println("Query ledger info")
 
-	ledgerInfo , err := ledgerClient.QueryInfo()
+	ledgerInfo, err := ledgerClient.QueryInfo()
 	if err != nil {
-		log.Printf("Failed to query blockChain info: %s\n ",err)
+		log.Printf("Failed to query blockChain info: %s\n ", err)
 		return nil, err
 	}
 
-	return ledgerInfo,nil
+	return ledgerInfo, nil
 
 }
 
 // QueryLastesBlocksINfo Query last 5 Blocks info
-func QueryLastesBlocksInfo() ([]*models.Block , error) {
+func QueryLastesBlocksInfo() ([]*models.Block, error) {
 
-	ledgerInfo , err := ledgerClient.QueryInfo()
+	ledgerInfo, err := ledgerClient.QueryInfo()
 	if err != nil {
-		log.Printf("Failed to query last 5 Blocks info:%s \n",err)
+		log.Printf("Failed to query last 5 Blocks info:%s \n", err)
 		return nil, err
 	}
 
 	var lastesBlockList []*models.Block
 	lastesBlockNum := ledgerInfo.BCI.Height - 1
 
-	for i := lastesBlockNum; i > 0 && i > (lastesBlockNum - 5 ) ; i-- {
-		block , err := QueryBlockByBlockNum(int64(i))
+	for i := lastesBlockNum; i > 0 && i > (lastesBlockNum-5); i-- {
+		block, err := QueryBlockByBlockNum(int64(i))
 		if err != nil {
-			log.Printf("Failed to Query last 5 Blocks info:%s \n",err)
+			log.Printf("Failed to Query last 5 Blocks info:%s \n", err)
 			return nil, err
 		}
-		lastesBlockList = append(lastesBlockList,block)
+		lastesBlockList = append(lastesBlockList, block)
 	}
 
 	return lastesBlockList, nil
 }
 
-func QueryAllBlocksInfo() ([]*models.Block , error){
-	ledgerInfo , err := ledgerClient.QueryInfo()
+func QueryAllBlocksInfo() ([]*models.Block, error) {
+	ledgerInfo, err := ledgerClient.QueryInfo()
 	if err != nil {
-		log.Printf("Failed to query last 5 Blocks info:%s \n",err)
+		log.Printf("Failed to query last 5 Blocks info:%s \n", err)
 		return nil, err
 	}
 
 	var lastesBlockList []*models.Block
 	lastesBlockNum := ledgerInfo.BCI.Height - 1
 
-	for i := lastesBlockNum; i >= 3 ; i-- {
-		block , err := QueryBlockByBlockNum(int64(i))
+	for i := lastesBlockNum; i >= 3; i-- {
+		block, err := QueryBlockByBlockNum(int64(i))
 		if err != nil {
-			log.Printf("Failed to Query last 5 Blocks info:%s \n",err)
+			log.Printf("Failed to Query last 5 Blocks info:%s \n", err)
 			return nil, err
 		}
-		lastesBlockList = append(lastesBlockList,block)
+		lastesBlockList = append(lastesBlockList, block)
 	}
 
 	return lastesBlockList, nil
@@ -123,9 +123,9 @@ func QueryAllBlocksInfo() ([]*models.Block , error){
 // QueryBlockByBlockNum Query Block info by block's number
 func QueryBlockByBlockNum(num int64) (*models.Block, error) {
 
-	rawBlock , err := ledgerClient.QueryBlock(uint64(num))
+	rawBlock, err := ledgerClient.QueryBlock(uint64(num))
 	if err != nil {
-		log.Printf("Failed to query Block info by block's number : %s \n",err)
+		log.Printf("Failed to query Block info by block's number : %s \n", err)
 		return nil, err
 	}
 
@@ -133,16 +133,16 @@ func QueryBlockByBlockNum(num int64) (*models.Block, error) {
 
 	var txList []*models.Transaction
 
-	for i := range rawBlock.Data.Data{
-		rawEnvelope , err := util.GetEnvelopeFromBlock(rawBlock.Data.Data[i])
-		if err != nil{
-			log.Printf("Failed to GetEnvelopeFromBlock: %s \n",err)
+	for i := range rawBlock.Data.Data {
+		rawEnvelope, err := util.GetEnvelopeFromBlock(rawBlock.Data.Data[i])
+		if err != nil {
+			log.Printf("Failed to GetEnvelopeFromBlock: %s \n", err)
 			return nil, err
 		}
 
 		transaction, err := util.GetTxFromEnvelopeDeep(rawEnvelope)
-		if err != nil{
-			log.Printf("Failed to GetTxFromEnvelopeDeep: %s \n",err)
+		if err != nil {
+			log.Printf("Failed to GetTxFromEnvelopeDeep: %s \n", err)
 			return nil, err
 		}
 
@@ -156,29 +156,29 @@ func QueryBlockByBlockNum(num int64) (*models.Block, error) {
 	blockHash := GetBlockHash(rawBlock.Header)
 	block := models.Block{
 
-		Number: rawBlock.Header.Number,
-		PreviousHash: rawBlock.Header.PreviousHash,
-		DataHash: rawBlock.Header.DataHash,
-		BlockHash: blockHash,
-		TxNum: len(rawBlock.Data.Data),
+		Number:          rawBlock.Header.Number,
+		PreviousHash:    rawBlock.Header.PreviousHash,
+		DataHash:        rawBlock.Header.DataHash,
+		BlockHash:       blockHash,
+		TxNum:           len(rawBlock.Data.Data),
 		TransactionList: txList,
-		CreateTime: txList[0].TransactionActionList[0].Timestamp,
+		CreateTime:      txList[0].TransactionActionList[0].Timestamp,
 	}
 
 	return &block, nil
 }
 
-func GetBlockHash(blockHeader *common.BlockHeader) []byte{
+func GetBlockHash(blockHeader *common.BlockHeader) []byte {
 
 	rawBlockHeader := models.BlockHeader{
-		Number: int8(blockHeader.Number),
+		Number:       int8(blockHeader.Number),
 		PreviousHash: blockHeader.PreviousHash,
-		DataHash: blockHeader.DataHash,
+		DataHash:     blockHeader.DataHash,
 	}
 
-	data , err := asn1.Marshal(rawBlockHeader)
+	data, err := asn1.Marshal(rawBlockHeader)
 	if err != nil {
-		log.Printf("Failed to GetBlockHash : %s \n",err)
+		log.Printf("Failed to GetBlockHash : %s \n", err)
 	}
 
 	h := sha256.New()
@@ -187,44 +187,42 @@ func GetBlockHash(blockHeader *common.BlockHeader) []byte{
 	return byteHash
 }
 
-func QueryTxByTxId(txId string) (*models.Transaction,error) {
-	rawTx,err := ledgerClient.QueryTransaction(fab.TransactionID(txId))
-	if err != nil{
-		log.Printf("Failed to QueryTxByTxId rawTx: %s \n",err)
+func QueryTxByTxId(txId string) (*models.Transaction, error) {
+	rawTx, err := ledgerClient.QueryTransaction(fab.TransactionID(txId))
+	if err != nil {
+		log.Printf("Failed to QueryTxByTxId rawTx: %s \n", err)
 		return nil, err
 	}
 
-	transaction,err := util.GetTxFromEnvelopeDeep(rawTx.TransactionEnvelope)
-	if err != nil{
-		log.Printf("Failed to QueryTxByTxId transaction: %s \n",err)
+	transaction, err := util.GetTxFromEnvelopeDeep(rawTx.TransactionEnvelope)
+	if err != nil {
+		log.Printf("Failed to QueryTxByTxId transaction: %s \n", err)
 		return nil, err
 	}
 
-	block , err := ledgerClient.QueryBlockByTxID(fab.TransactionID(txId))
-	if err != nil{
-		log.Printf("Failed to QueryTxByTxId block: %s \n",err)
+	block, err := ledgerClient.QueryBlockByTxID(fab.TransactionID(txId))
+	if err != nil {
+		log.Printf("Failed to QueryTxByTxId block: %s \n", err)
 		return nil, err
 	}
 
-	for i := range transaction.TransactionActionList{
+	for i := range transaction.TransactionActionList {
 		transaction.TransactionActionList[i].BlockNum = block.Header.Number
 	}
 
-	return transaction,nil
+	return transaction, nil
 }
 
-func QueryTxByTxIdJsonStr(txId string) (string,error) {
-	transaction , err := QueryTxByTxId(txId)
-	if err != nil{
-		log.Printf("Failed to QueryTxByTxIdJsonStr transaction: %s \n",err)
+func QueryTxByTxIdJsonStr(txId string) (string, error) {
+	transaction, err := QueryTxByTxId(txId)
+	if err != nil {
+		log.Printf("Failed to QueryTxByTxIdJsonStr transaction: %s \n", err)
 		return "", err
 	}
 
 	jsonStr, err := json.Marshal(transaction)
-	return string(jsonStr),err
+	return string(jsonStr), err
 }
-
-
 
 // OperateLedgerTest Test for operate ledger
 func OperateLedgerTest() {
@@ -244,6 +242,3 @@ func OperateLedgerTest() {
 	fmt.Println(rawBlock.GetHeader().GetDataHash())
 
 }
-
-
-

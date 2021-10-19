@@ -1,8 +1,11 @@
 package common
 
 import (
+	"crypto/sha256"
+	"encoding/asn1"
 	"encoding/json"
 	"fmt"
+	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
@@ -95,6 +98,28 @@ func QueryLastesBlocksInfo() ([]*models.Block , error) {
 	return lastesBlockList, nil
 }
 
+func QueryAllBlocksInfo() ([]*models.Block , error){
+	ledgerInfo , err := ledgerClient.QueryInfo()
+	if err != nil {
+		log.Printf("Failed to query last 5 Blocks info:%s \n",err)
+		return nil, err
+	}
+
+	var lastesBlockList []*models.Block
+	lastesBlockNum := ledgerInfo.BCI.Height - 1
+
+	for i := lastesBlockNum; i >= 3 ; i-- {
+		block , err := QueryBlockByBlockNum(int64(i))
+		if err != nil {
+			log.Printf("Failed to Query last 5 Blocks info:%s \n",err)
+			return nil, err
+		}
+		lastesBlockList = append(lastesBlockList,block)
+	}
+
+	return lastesBlockList, nil
+}
+
 // QueryBlockByBlockNum Query Block info by block's number
 func QueryBlockByBlockNum(num int64) (*models.Block, error) {
 
@@ -128,18 +153,38 @@ func QueryBlockByBlockNum(num int64) (*models.Block, error) {
 		txList = append(txList, transaction)
 	}
 
+	blockHash := GetBlockHash(rawBlock.Header)
 	block := models.Block{
 
 		Number: rawBlock.Header.Number,
 		PreviousHash: rawBlock.Header.PreviousHash,
 		DataHash: rawBlock.Header.DataHash,
-		BlockHash: rawBlock.Header.DataHash,
+		BlockHash: blockHash,
 		TxNum: len(rawBlock.Data.Data),
 		TransactionList: txList,
 		CreateTime: txList[0].TransactionActionList[0].Timestamp,
 	}
 
 	return &block, nil
+}
+
+func GetBlockHash(blockHeader *common.BlockHeader) []byte{
+
+	rawBlockHeader := models.BlockHeader{
+		Number: int8(blockHeader.Number),
+		PreviousHash: blockHeader.PreviousHash,
+		DataHash: blockHeader.DataHash,
+	}
+
+	data , err := asn1.Marshal(rawBlockHeader)
+	if err != nil {
+		log.Printf("Failed to GetBlockHash : %s \n",err)
+	}
+
+	h := sha256.New()
+	h.Write(data)
+	byteHash := h.Sum(nil)
+	return byteHash
 }
 
 func QueryTxByTxId(txId string) (*models.Transaction,error) {

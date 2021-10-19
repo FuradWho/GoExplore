@@ -10,6 +10,13 @@ type Block struct {
 	CreateTime      string         `json:"createTime"`      //区块生成时间
 }
 
+
+type BlockHeader struct {
+	Number          int8           `json:"number"`          //区块号
+	PreviousHash    []byte         `json:"previousHash"`    //前区块Hash
+	DataHash        []byte         `json:"dataHash"`        //交易体Hash
+}
+
 type Transaction struct {
 	TransactionActionList []*TransactionAction `json:"transactionActionList"` //交易列表
 }

@@ -15,6 +15,15 @@ func GetLastesBlocksInfo(context *context.Context) {
 	context.JSON(blocks)
 }
 
+func QueryAllBlocksInfo(context *context.Context) {
+	blocks ,err :=common.QueryAllBlocksInfo()
+	if err != nil {
+		log.Println(err)
+	}
+	context.JSON(blocks)
+}
+
+
 func QueryTxByTxId(context *context.Context) {
 
 	txId := context.URLParam("txId")

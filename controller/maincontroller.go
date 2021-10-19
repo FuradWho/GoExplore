@@ -14,6 +14,7 @@ func StartIris()  {
 
 		blocksApi.Get("/QueryLastesBlocksInfo",service.GetLastesBlocksInfo)
 		blocksApi.Get("/QueryBlockByBlockNum",service.QueryBlockByBlockNum)
+		blocksApi.Get("/QueryAllBlocksInfo",service.QueryAllBlocksInfo)
 
 	}
 

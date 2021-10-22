@@ -3,6 +3,7 @@ package common
 import (
 	"crypto/sha256"
 	"encoding/asn1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric-protos-go/common"
@@ -105,19 +106,68 @@ func QueryAllBlocksInfo() ([]*models.Block, error) {
 		return nil, err
 	}
 
-	var lastesBlockList []*models.Block
-	lastesBlockNum := ledgerInfo.BCI.Height - 1
+	var blockList []*models.Block
+	blockNum := ledgerInfo.BCI.Height - 1
 
-	for i := lastesBlockNum; i >= 3; i-- {
+	for i := blockNum; i >= 3; i-- {
 		block, err := QueryBlockByBlockNum(int64(i))
 		if err != nil {
 			log.Printf("Failed to Query last 5 Blocks info:%s \n", err)
 			return nil, err
 		}
-		lastesBlockList = append(lastesBlockList, block)
+		blockList = append(blockList, block)
 	}
 
-	return lastesBlockList, nil
+	return blockList, nil
+}
+
+// QueryBlockInfoByHash  Query one block by blockHash
+func QueryBlockInfoByHash(blockHash []byte) (*models.Block , error) {
+	rawBlockInfo,err := ledgerClient.QueryBlockByHash(blockHash)
+	if err != nil {
+		log.Printf("Failed to query block by blockHash:%s \n", err)
+		return nil, err
+	}
+	block, err := QueryBlockByBlockNum(int64(rawBlockInfo.GetHeader().Number))
+	if err != nil {
+		log.Printf("Failed to query block by blockHash QueryBlockByBlockNum:%s \n", err)
+		return nil, err
+	}
+
+	return block,nil
+}
+
+// QueryBlockMainInfo Query the main config of channel
+func QueryBlockMainInfo() (*models.BlockMainInfo , error) {
+
+	ledgerInfo, err := ledgerClient.QueryInfo()
+	if err != nil {
+		log.Printf("Failed to Query the main config of channel:%s \n", err)
+		return nil, err
+	}
+
+	blockNum := ledgerInfo.BCI.Height - 1
+
+	var txNum uint64
+	for i := blockNum; i >= 3; i-- {
+		rawBlock, err := ledgerClient.QueryBlock(uint64(i))
+		if err != nil {
+			log.Printf("Failed to Query the main config of channel:%s \n", err)
+			return nil, err
+		}
+
+		txNum = txNum + uint64(len(rawBlock.Data.Data))
+
+	}
+
+	mainBlockInfo := &models.BlockMainInfo{
+		BlockNum: ledgerInfo.BCI.Height,
+		TransactionNum: txNum,
+		ChaincodeNum: 2,
+		NodeNum: 3,
+	}
+
+	return mainBlockInfo, err
 }
 
 // QueryBlockByBlockNum Query Block info by block's number
@@ -157,13 +207,16 @@ func QueryBlockByBlockNum(num int64) (*models.Block, error) {
 	block := models.Block{
 
 		Number:          rawBlock.Header.Number,
-		PreviousHash:    rawBlock.Header.PreviousHash,
-		DataHash:        rawBlock.Header.DataHash,
-		BlockHash:       blockHash,
+		PreviousHash:    hex.EncodeToString(rawBlock.Header.PreviousHash),
+		DataHash:        hex.EncodeToString(rawBlock.Header.DataHash),
+		BlockHash:       hex.EncodeToString(blockHash),
 		TxNum:           len(rawBlock.Data.Data),
 		TransactionList: txList,
 		CreateTime:      txList[0].TransactionActionList[0].Timestamp,
+
 	}
+
+
 
 	return &block, nil
 }

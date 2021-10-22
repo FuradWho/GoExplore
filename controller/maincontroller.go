@@ -44,6 +44,8 @@ func StartIris() {
 		blocksApi.Get("/QueryLastesBlocksInfo", service.GetLastesBlocksInfo)
 		blocksApi.Get("/QueryBlockByBlockNum", service.QueryBlockByBlockNum)
 		blocksApi.Get("/QueryAllBlocksInfo", service.QueryAllBlocksInfo)
+		blocksApi.Get("/QueryBlockInfoByHash", service.QueryBlockInfoByHash)
+		blocksApi.Get("/QueryBlockMainInfo",service.QueryBlockMainInfo)
 
 	}
 
@@ -51,11 +53,17 @@ func StartIris() {
 	txsApi := app.Party("/txs")
 	{
 		txsApi.Use(iris.Compression)
+
 		txsApi.Get("/QueryTxByTxId", service.QueryTxByTxId)
 		txsApi.Get("/QueryTxByTxIdJsonStr", service.QueryTxByTxIdJsonStr)
 	}
+
+
+
 	app.Listen(":9090")
 }
+
+// Cors Resolve the CORS
 func Cors(ctx iris.Context) {
 	ctx.Header("Access-Control-Allow-Origin", "*")
 	if ctx.Request().Method == "OPTIONS" {

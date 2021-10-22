@@ -2,9 +2,9 @@ package models
 
 type Block struct {
 	Number          uint64         `json:"number"`          //区块号
-	PreviousHash    []byte         `json:"previousHash"`    //前区块Hash
-	DataHash        []byte         `json:"dataHash"`        //交易体Hash
-	BlockHash       []byte         `json:"blockHash"`       //区块Hash
+	PreviousHash    string         `json:"previousHash"`    //前区块Hash
+	DataHash        string         `json:"dataHash"`        //交易体Hash
+	BlockHash       string         `json:"blockHash"`       //区块Hash
 	TxNum           int            `json:"txNum"`           //区块内交易个数
 	TransactionList []*Transaction `json:"transactionList"` //交易列表
 	CreateTime      string         `json:"createTime"`      //区块生成时间
@@ -30,4 +30,11 @@ type TransactionAction struct {
 	ChaincodeId  string   `json:"chaincodeId"`  //链代码名称
 	ReadSetList  []string `json:"readSetList"`  //读集
 	WriteSetList []string `json:"writeSetList"` //写集
+}
+
+type BlockMainInfo struct {
+	BlockNum     		uint64   `json:"blockNum"` 			// the number of blocks
+	TransactionNum     	uint64   `json:"transactionNum"` 	// the number of transactions
+	ChaincodeNum     	uint64   `json:"chaincodeNum"` 		// the number of chaincodes
+	NodeNum     		uint64   `json:"nodeNum"` 			// the number of nodes
 }

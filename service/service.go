@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/hex"
 	"github.com/kataras/iris/v12/context"
 	"goExplore/common"
 	"log"
@@ -77,4 +78,30 @@ func QueryBlockByBlockNum(context *context.Context) {
 
 		context.JSON(transactions)
 	}
+}
+
+func QueryBlockInfoByHash(context *context.Context)  {
+	blockHash := context.URLParam("blockHash")
+	if blockHash == "" {
+		context.JSON("fail")
+	} else {
+		byteBlockHash ,err := hex.DecodeString(blockHash)
+		if err != nil {
+			log.Println(err)
+		}
+		blockInfo, err := common.QueryBlockInfoByHash(byteBlockHash)
+		if err != nil {
+			log.Println(err)
+		}
+
+		context.JSON(blockInfo)
+	}
+}
+
+func QueryBlockMainInfo(context *context.Context)  {
+	blocks, err := common.QueryBlockMainInfo()
+	if err != nil {
+		log.Println(err)
+	}
+	context.JSON(blocks)
 }

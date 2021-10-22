@@ -7,6 +7,16 @@ import (
 	"strconv"
 )
 
+// @Summary ping example
+// @Description do ping
+// @Tags example
+// @Accept json
+// @Produce json
+// @Success 200 {string} string "pong"
+// @Failure 400 {string} string "ok"
+// @Failure 404 {string} string "ok"
+// @Failure 500 {string} string "ok"
+// @Router /examples/ping [get]
 func GetLastesBlocksInfo(context *context.Context) {
 	blocks, err := common.QueryLastesBlocksInfo()
 	if err != nil {

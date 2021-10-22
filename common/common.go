@@ -74,7 +74,7 @@ func QueryLedgerInfo() (*fab.BlockchainInfoResponse, error) {
 
 }
 
-// QueryLastesBlocksINfo Query last 5 Blocks info
+// QueryLastesBlocksInfo  Query last 5 Blocks info
 func QueryLastesBlocksInfo() ([]*models.Block, error) {
 
 	ledgerInfo, err := ledgerClient.QueryInfo()

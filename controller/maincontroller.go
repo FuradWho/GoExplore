@@ -30,6 +30,7 @@ func StartIris() {
 		URL: "http://localhost:9090/swagger/doc.json", //The url pointing to API definition
 	}
 
+	// swagger config
 	swaggerApi := app.Party("/swagger")
 	{
 		swaggerApi.Get("/{any:path}", swagger.CustomWrapHandler(config, swaggerFiles.Handler))
@@ -53,11 +54,8 @@ func StartIris() {
 		txsApi.Get("/QueryTxByTxId", service.QueryTxByTxId)
 		txsApi.Get("/QueryTxByTxIdJsonStr", service.QueryTxByTxIdJsonStr)
 	}
-
 	app.Listen(":9090")
-
 }
-
 func Cors(ctx iris.Context) {
 	ctx.Header("Access-Control-Allow-Origin", "*")
 	if ctx.Request().Method == "OPTIONS" {

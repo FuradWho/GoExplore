@@ -58,9 +58,15 @@ func StartIris() {
 		txsApi.Get("/QueryTxByTxIdJsonStr", service.QueryTxByTxIdJsonStr)
 	}
 
+	chaincodeApi := app.Party("/cc")
+	{
+		chaincodeApi.Use(iris.Compression)
 
+		chaincodeApi.Get("/QueryInstalledCC",service.QueryInstalledCC)
 
-	app.Listen(":9090")
+	}
+
+	app.Listen(":9099")
 }
 
 // Cors Resolve the CORS

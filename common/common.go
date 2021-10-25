@@ -8,25 +8,32 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
+	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
+	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
+	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/core"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
+	"github.com/hyperledger/fabric-sdk-go/pkg/core/config/lookup"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	localConfig "goExplore/config"
 	"goExplore/models"
 	"goExplore/util"
 	"log"
 	"os"
+	"strings"
 )
 
 var mainSDK *fabsdk.FabricSDK
 var ledgerClient *ledger.Client
+var resMgmtClient *resmgmt.Client
+var client *models.Client
 
 // InitChainExploreService Init ChainExplore Client (ledger client)
-func InitChainExploreService(cfg, org, admin, user string) *models.Client {
+func InitChainExploreService(cfg, org, admin, user string) {
 
 	log.Println("Initialize the client")
 
-	client := &models.Client{
+	client = &models.Client{
 		ConfigPath: cfg,
 		OrgName:    org,
 		OrgAdmin:   admin,
@@ -56,8 +63,70 @@ func InitChainExploreService(cfg, org, admin, user string) *models.Client {
 	}
 	log.Println("Success to create an new ledgerClient ")
 
-	return client
+	adminContext := mainSDK.Context(fabsdk.WithUser(client.OrgAdmin),fabsdk.WithOrg(client.OrgName))
 
+	resMgmtClient,err = resmgmt.New(adminContext)
+	if err != nil {
+		log.Printf("Failed to create an new orgResMgmt:%s\n", err)
+	}
+
+	//defer client.SDK.Close()
+
+}
+
+// QueryInstalledCC Query installed chaincode
+func QueryInstalledCC() ([]*models.Chaincode,error) {
+
+	configBackend, err := mainSDK.Config()
+	if err != nil {
+		log.Printf("Failed to get mainSDK config:%s \n",err)
+		return nil, err
+	}
+
+	targets, err := orgTargetPeers([]string{client.OrgName}, configBackend)
+	if err != nil {
+		log.Printf("Failed to get targets:%s \n",err)
+		return nil, err
+	}
+	peer := targets[0]
+
+	var chaincodeInfos []*models.Chaincode
+
+
+	installedCC, err := resMgmtClient.LifecycleQueryInstalledCC(resmgmt.WithTargetEndpoints(peer), resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+	for _, cc := range installedCC {
+
+		chaincodeInfo := &models.Chaincode{}
+		chaincodeInfo.Label = cc.Label
+		chaincodeInfo.PackageID = cc.PackageID
+		chaincodeInfo.References = cc.References
+
+		chaincodeInfos = append(chaincodeInfos,chaincodeInfo)
+
+	}
+
+	return chaincodeInfos,nil
+}
+
+
+func orgTargetPeers(orgs []string, configBackend ...core.ConfigBackend) ([]string, error) {
+
+	networkConfig := fab.NetworkConfig{}
+
+	err := lookup.New(configBackend...).UnmarshalKey("organizations", &networkConfig.Organizations)
+	if err != nil {
+		return nil, err
+	}
+
+	var peers []string
+	for _, org := range orgs {
+		orgConfig, ok := networkConfig.Organizations[strings.ToLower(org)]
+		if !ok {
+			continue
+		}
+		peers = append(peers, orgConfig.Peers...)
+	}
+	return peers, nil
 }
 
 // QueryLedgerInfo Query ledger info
@@ -216,8 +285,6 @@ func QueryBlockByBlockNum(num int64) (*models.Block, error) {
 
 	}
 
-
-
 	return &block, nil
 }
 
@@ -295,3 +362,36 @@ func OperateLedgerTest() {
 	fmt.Println(rawBlock.GetHeader().GetDataHash())
 
 }
+
+// QueryChannelInfo Query channel info
+func QueryChannelInfo() []string {
+
+	configBackend, err := mainSDK.Config()
+	if err != nil {
+		log.Printf("Failed to get config backend from SDK: %s", err)
+	}
+
+	targets, err := orgTargetPeers([]string{localConfig.OrgGo}, configBackend)
+	if err != nil {
+
+		log.Printf("Creating peers failed: %s", err)
+	}
+
+	channelQueryResponse, err := resMgmtClient.QueryChannels(
+		resmgmt.WithTargetEndpoints(targets[0]),
+		resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+
+	if err != nil {
+		log.Printf("QueryChannels return error: %s", err)
+	}
+
+	var channels []string
+
+	for _, channel := range channelQueryResponse.Channels {
+		channels =append(channels , channel.ChannelId)
+	}
+	return channels
+}
+
+
+

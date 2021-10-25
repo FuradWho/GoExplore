@@ -38,6 +38,36 @@ func GetTxFromEnvelopeDeep(rawEnvelope *common.Envelope) (*models.Transaction, e
 		log.Printf("Failed to unmarshal Payload's ChannelHeader :%s \n", err)
 	}
 
+	signatureHeader := &common.SignatureHeader{}
+	err = proto.Unmarshal(rawPayload.Header.SignatureHeader,signatureHeader)
+	if err != nil {
+		log.Printf("Failed to unmarshal Payload's signatureHeader :%s \n", err)
+	}
+
+	creator := &msp.SerializedIdentity{}
+	err = proto.Unmarshal(signatureHeader.Creator,creator)
+	if err != nil {
+		log.Printf("Failed to unmarshal Payload's signatureHeader :%s \n", err)
+	}
+
+	// from creator get IdBytes (MSP)
+
+	//uEnc := base64.URLEncoding.EncodeToString(creator.IdBytes)
+	//
+	//certText , err := base64.URLEncoding.DecodeString(uEnc)
+	//if err != nil {
+	//	log.Printf("Failed to unmarshal  certText :%s \n", err)
+	//}
+	//end , _ := pem.Decode(certText)
+	//if end != nil{
+	//	log.Printf("Failed to unmarshal  end :%s \n", end)
+	//}
+
+	//cert , err := x509.ParseCertificate(end.Bytes)
+	//if err != nil {
+	//	log.Printf("Failed to unmarshal  certText :%s \n", err)
+	//}
+
 	transaction := &peer.Transaction{}
 	err = proto.Unmarshal(rawPayload.Data, transaction)
 	if err != nil {

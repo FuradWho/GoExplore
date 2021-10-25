@@ -105,3 +105,12 @@ func QueryBlockMainInfo(context *context.Context)  {
 	}
 	context.JSON(blocks)
 }
+
+func QueryInstalledCC(context *context.Context)  {
+
+	 chaincodeInfo,err := common.QueryInstalledCC()
+	if err != nil {
+		log.Println(err)
+	}
+	context.JSON(chaincodeInfo)
+}

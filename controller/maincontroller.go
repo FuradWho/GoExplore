@@ -40,7 +40,6 @@ func StartIris() {
 	blocksApi := app.Party("/blocks")
 	{
 		blocksApi.Use(iris.Compression)
-
 		blocksApi.Get("/QueryLastesBlocksInfo", service.GetLastesBlocksInfo)
 		blocksApi.Get("/QueryBlockByBlockNum", service.QueryBlockByBlockNum)
 		blocksApi.Get("/QueryAllBlocksInfo", service.QueryAllBlocksInfo)
@@ -53,7 +52,6 @@ func StartIris() {
 	txsApi := app.Party("/txs")
 	{
 		txsApi.Use(iris.Compression)
-
 		txsApi.Get("/QueryTxByTxId", service.QueryTxByTxId)
 		txsApi.Get("/QueryTxByTxIdJsonStr", service.QueryTxByTxIdJsonStr)
 	}
@@ -61,8 +59,13 @@ func StartIris() {
 	chaincodeApi := app.Party("/cc")
 	{
 		chaincodeApi.Use(iris.Compression)
-
 		chaincodeApi.Get("/QueryInstalledCC",service.QueryInstalledCC)
+
+	}
+	channelApi := app.Party("/channel")
+	{
+		channelApi.Use(iris.Compression)
+		channelApi.Get("/QueryChannelInfo",service.QueryChannelInfo)
 
 	}
 

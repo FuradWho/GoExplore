@@ -226,7 +226,6 @@ func QueryBlockMainInfo() (*models.BlockMainInfo , error) {
 		}
 
 		txNum = txNum + uint64(len(rawBlock.Data.Data))
-
 	}
 
 	mainBlockInfo := &models.BlockMainInfo{
@@ -363,8 +362,8 @@ func OperateLedgerTest() {
 
 }
 
-// QueryChannelInfo Query channel info
-func QueryChannelInfo() []string {
+// QueryChannels Query channels
+func QueryChannels() []string {
 
 	configBackend, err := mainSDK.Config()
 	if err != nil {
@@ -391,6 +390,28 @@ func QueryChannelInfo() []string {
 		channels =append(channels , channel.ChannelId)
 	}
 	return channels
+}
+
+// QueryChannelInfo Query channel info
+func QueryChannelInfo() (*models.ChannelInfo , error) {
+
+
+	ledgerInfo, err := ledgerClient.QueryInfo()
+	if err != nil {
+		log.Printf("Failed to Query the main config of channel:%s \n", err)
+		return nil, err
+	}
+
+
+	cInfo := &models.ChannelInfo{
+		Name:   localConfig.ChannelID,
+		Blocks: int(ledgerInfo.BCI.Height),
+		Txs: int(ledgerInfo.BCI.Height)-3,
+		Timestamp: "2021-10-13T07:41:30.000Z",
+	}
+
+	return cInfo, nil
+
 }
 
 

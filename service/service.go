@@ -114,3 +114,11 @@ func QueryInstalledCC(context *context.Context)  {
 	}
 	context.JSON(chaincodeInfo)
 }
+
+func QueryChannelInfo(context *context.Context)  {
+	channelInfo,err := common.QueryChannelInfo()
+	if err != nil {
+		log.Println(err)
+	}
+	context.JSON(channelInfo)
+}

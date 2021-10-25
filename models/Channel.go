@@ -10,7 +10,7 @@ type Chaincode struct {
 
 }
 
-type Channel struct {
+type ChannelInfo struct {
 
 	Name 			string 				`json:"name"`
 	Blocks 			int 				`json:"blocks"`

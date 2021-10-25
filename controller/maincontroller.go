@@ -80,3 +80,4 @@ func Cors(ctx iris.Context) {
 	}
 	ctx.Next()
 }
+

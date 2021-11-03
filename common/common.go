@@ -6,7 +6,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/gofrs/uuid"
 	"github.com/hyperledger/fabric-protos-go/common"
+	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
@@ -15,18 +17,21 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config/lookup"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	localConfig "goExplore/config"
 	"goExplore/models"
 	"goExplore/util"
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 var mainSDK *fabsdk.FabricSDK
 var ledgerClient *ledger.Client
 var resMgmtClient *resmgmt.Client
 var client *models.Client
+var channelClient *channel.Client
 
 // InitChainExploreService Init ChainExplore Client (ledger client)
 func InitChainExploreService(cfg, org, admin, user string) {
@@ -70,8 +75,15 @@ func InitChainExploreService(cfg, org, admin, user string) {
 		log.Printf("Failed to create an new orgResMgmt:%s\n", err)
 	}
 
-	//defer client.SDK.Close()
+	channelClient ,err = channel.New(userChannelContext)
+	if err != nil{
+		log.Printf("Failed to create an new channelClient:%s\n", err)
+	}
 
+
+	//defer client.SDK.Close()
+	//ccfig,err := ledgerClient.QueryConfig()
+	//fmt.Println(ccfig)
 }
 
 // QueryInstalledCC Query installed chaincode
@@ -413,6 +425,79 @@ func QueryChannelInfo() (*models.ChannelInfo , error) {
 	return cInfo, nil
 
 }
+
+func WalletTest()  {
+	wallet ,err := gateway.NewFileSystemWallet("walletTest")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(wallet)
+	fmt.Println(wallet.Exists("User"))
+
+}
+
+func QueryInfoByChaincode(uuid string)(*models.ChaincodeInfo,error){
+
+	var args [][]byte
+	args = append(args,[]byte(uuid))
+
+	req := channel.Request{
+		ChaincodeID:localConfig.ChaincodeID,
+		Fcn: "get",
+		Args: args,
+	}
+
+	resp , err := channelClient.Query(req)
+	if err != nil {
+		log.Printf("Failed to QueryInfoByChaincode:%s\n", err)
+		return nil, err
+	}
+
+	chaincodeInfo :=  &models.ChaincodeInfo{
+		Uuid:    uuid,
+		TxId:    string(resp.TransactionID),
+		Time:    time.Now(),
+		Payload: string(resp.Payload),
+	}
+
+	log.Printf("query chaincode tx : %s",resp.TransactionID)
+	log.Printf("result : %v",string(resp.Payload))
+
+	return chaincodeInfo,nil
+
+}
+
+func InvokeInfoByChaincode(data string)(*models.ChaincodeInfo,error){
+
+ 	u4 ,err := uuid.NewV4()
+	key := []byte(u4.String())
+	var args [][]byte
+	args = append(args,key)
+	args = append(args,[]byte(data))
+
+	req := channel.Request{
+		ChaincodeID: localConfig.ChaincodeID,
+		Fcn: "set",
+		Args: args,
+	}
+
+	resp , err := channelClient.Execute(req)
+	if err != nil {
+		log.Printf("Failed to invokeInfoByChaincode:%s\n", err)
+		return nil, err
+	}
+
+	chaincodeInfo :=  &models.ChaincodeInfo{
+		Uuid:    u4.String(),
+		TxId:    string(resp.TransactionID),
+		Time:    time.Now(),
+		Payload: string(resp.Payload),
+	}
+
+	return chaincodeInfo,nil
+}
+
 
 
 

@@ -4,6 +4,7 @@ import (
 	"github.com/iris-contrib/swagger/v12"
 	"github.com/iris-contrib/swagger/v12/swaggerFiles"
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/context"
 	"goExplore/service"
 
 	_ "goExplore/docs"
@@ -28,6 +29,13 @@ func StartIris() {
 	app.Use(Cors)
 	config := &swagger.Config{
 		URL: "http://localhost:9090/swagger/doc.json", //The url pointing to API definition
+	}
+
+	testApi := app.Party("/")
+	{
+		testApi.Get("/test", func(context *context.Context) {
+			context.JSON("111111111111111111")
+		})
 	}
 
 	// swagger config
@@ -60,6 +68,8 @@ func StartIris() {
 	{
 		chaincodeApi.Use(iris.Compression)
 		chaincodeApi.Get("/QueryInstalledCC",service.QueryInstalledCC)
+		chaincodeApi.Post("/InvokeInfoByChaincode",service.InvokeInfoByChaincode)
+		chaincodeApi.Get("/QueryInfoByChaincode",service.QueryInfoByChaincode)
 
 	}
 	channelApi := app.Party("/channel")

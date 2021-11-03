@@ -122,3 +122,34 @@ func QueryChannelInfo(context *context.Context)  {
 	}
 	context.JSON(channelInfo)
 }
+
+func InvokeInfoByChaincode(context *context.Context)  {
+
+	data := context.PostValue("data")
+	if data == ""{
+		context.JSON("fail")
+	}else{
+		chaincodeInfo, err := common.InvokeInfoByChaincode(data)
+		if err != nil {
+			log.Println(err)
+		}
+		context.JSON(chaincodeInfo)
+	}
+
+}
+
+func QueryInfoByChaincode(context *context.Context)  {
+
+	uuid := context.URLParam("uuid")
+
+	if uuid == ""{
+		context.JSON("fail")
+	}else{
+		chaincodeInfo, err := common.QueryInfoByChaincode(uuid)
+		if err != nil {
+			log.Println(err)
+		}
+		context.JSON(chaincodeInfo)
+	}
+
+}

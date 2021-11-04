@@ -8,7 +8,7 @@ client:
     level: info
   # MSP根目录 链接byfn网络时，指定为网络启动后生成的crypto-config文件夹
   cryptoconfig:
-    path: /usr/local/soft/fabric-ca
+    path: /usr/local/soft/fabric-ca/configtx
   # 某些SDK支持插件化的KV数据库，通过该属性实现
   credentialStore:
     # 可选，用于用户证书材料存储，如果所有的证书材料被嵌入到配置文件，则不需要
@@ -37,37 +37,38 @@ client:
 # Fabric区块链网络中参与的组织列表
 organizations:
   # 组织名
-  OrgGo:
-    mspid: OrgGoMSP
+  org1:
+    mspid: org1MSP
     # 组织的MSP存储位置，绝对路径或相对cryptoconfig的路径
-    cryptoPath: /usr/local/soft/fabric-test5/crypto-config/peerOrganizations/orggo.example.com/users/{username}@orggo.example.com/msp
+    cryptoPath: /usr/local/soft/fabric-ca/org1/ca/crypto/msp
 
     # 组织中的节点
     peers:
-      - peer0.orggo.example.com
+      - peer1-org1
 
-  OrgCpp:
-    mspid: OrgCppMSP
-    cryptoPath: /usr/local/soft/fabric-test5/crypto-config/peerOrganizations/orgcpp.example.com/users/{username}@orgcpp.example.com/msp
+  org2:
+    mspid: org2MSP
+    cryptoPath: /usr/local/soft/fabric-ca/org2/ca/crypto/msp
 
     peers:
-      - peer0.orgcpp.example.com
+      - peer1-org2
+      - peer2-org2
 
-  ordererorg:
-    mspID: OrdererMSP
-    cryptoPath: /usr/local/soft/fabric-test5/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp
+  org0:
+    mspID: org0MSP
+    cryptoPath: /usr/local/soft/fabric-ca/org0/ca/crypto/msp
 
 # 发送交易请求或通道创建、更新请求到的orderers列表
 # 如果定义了超过一个orderer，SDK使用哪一个orderer由代码实现时指定
 orderers:
-  orderer.example.com:
-    url: grpcs://192.168.175.133:7050
+  orderer1-org0:
+    url: grpcs://192.168.175.140:7050
 
     # 以下属性由gRPC库定义，会被传递给gRPC客户端构造函数
     grpcOptions:
       # 下列参数用于设置服务器上的keepalive策略，不兼容的设置会导致连接关闭
       # 当keep-alive-time被设置为0或小于激活客户端的参数，下列参数失效
-      ssl-target-name-override: orderer.example.com
+      ssl-target-name-override: orderer1-org0
       keep-alive-time: 0s
       keep-alive-timeout: 20s
       keep-alive-permit: false
@@ -76,50 +77,67 @@ orderers:
 
     tlsCACerts:
       #证书的绝对路径
-      path: /usr/local/soft/fabric-test5/crypto-config/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
+      path: /usr/local/soft/fabric-ca/org0/ca/crypto/ca-cert.pem
 #peers必须指定Hyperledger Fabric区块链网络中所有peer节点的主机名和端口，可能会在其它地方引用，如channels，organizations等部分。
 peers:
-  peer0.orggo.example.com:
+  peer1-org1:
     # 表明使用grpcs协议，设置IP和端口号，使用域名会无法连接
     # url: grpcs://peer0.org1.example.com:7051
-    url: grpcs://192.168.175.133:7051
+    url: grpcs://192.168.175.140:7051
 
     grpcOptions:
-      ssl-target-name-override: peer0.orggo.example.com
+      ssl-target-name-override: peer1-org1
       keep-alive-time: 0s
       keep-alive-timeout: 20s
       keep-alive-permit: false
       fail-fast: false
       allow-insecure: false
     tlsCACerts:
-      path: /usr/local/soft/fabric-test5/crypto-config/peerOrganizations/orggo.example.com/tlsca/tlsca.orggo.example.com-cert.pem
+      path: /usr/local/soft/fabric-ca/org1/ca/crypto/ca-cert.pem
 
-  peer0.orgcpp.example.com:
-    url: grpcs://192.168.175.133:9051
+  peer1-org2:
+    url: grpcs://192.168.175.140:9051
     grpcOptions:
-      ssl-target-name-override: peer0.orgcpp.example.com
+      ssl-target-name-override: peer1-org2
       keep-alive-time: 0s
       keep-alive-timeout: 20s
       keep-alive-permit: false
       fail-fast: false
       allow-insecure: false
     tlsCACerts:
-      path: /usr/local/soft/fabric-test5/crypto-config/peerOrganizations/orgcpp.example.com/tlsca/tlsca.orgcpp.example.com-cert.pem
+      path: /usr/local/soft/fabric-ca/org2/ca/crypto/ca-cert.pem
+
+  peer2-org2:
+    url: grpcs://192.168.175.140:10051
+    grpcOptions:
+      ssl-target-name-override: peer2-org2
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      allow-insecure: false
+    tlsCACerts:
+      path: /usr/local/soft/fabric-ca/org2/ca/crypto/ca-cert.pem
 
 entitymatchers:
   peer:
-    - pattern: (\w*)peer0.orggo.example.com(\w*)
-      urlsubstitutionexp: grpcs://192.168.175.133:7051
-      ssltargetoverrideurlsubstitutionexp: peer0.orggo.example.com
-      mappedhost: peer0.orggo.example.com
+    - pattern: (\w*)peer1-org1(\w*)
+      urlsubstitutionexp: grpcs://192.168.175.140:7051
+      ssltargetoverrideurlsubstitutionexp: peer1-org1
+      mappedhost: peer1-org1
 
-    - pattern: (\w*)peer0.orgcpp.example.com(\w*)
-      urlsubstitutionexp: grpcs://192.168.175.133:9051
-      ssltargetoverrideurlsubstitutionexp: peer0.orgcpp.example.com
-      mappedhost: peer0.orgcpp.example.com
+    - pattern: (\w*)peer1-org2(\w*)
+      urlsubstitutionexp: grpcs://192.168.175.140:9051
+      ssltargetoverrideurlsubstitutionexp: peer1-org2
+      mappedhost: peer1-org2
+
+    - pattern: (\w*)peer2-org2(\w*)
+      urlsubstitutionexp: grpcs://192.168.175.140:10051
+      ssltargetoverrideurlsubstitutionexp: peer2-org2
+      mappedhost: peer2-org2
 
   orderer:
-    - pattern: (\w*)orderer.example.com(\w*)
-      urlsubstitutionexp: 192.168.175.133:7050
-      ssltargetoverrideurlsubstitutionexp: orderer.example.com
-      mappedhost: orderer.example.com
+    - pattern: (\w*)orderer1-org0(\w*)
+      urlsubstitutionexp: 192.168.175.140:7050
+      ssltargetoverrideurlsubstitutionexp: orderer1-org0
+      mappedhost: orderer1-org0

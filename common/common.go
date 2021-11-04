@@ -470,8 +470,9 @@ func QueryInfoByChaincode(uuid string)(*models.ChaincodeInfo,error){
 
 func InvokeInfoByChaincode(data string)(*models.ChaincodeInfo,error){
 
- 	u4 ,err := uuid.NewV4()
-	key := []byte(u4.String())
+ 	v4 ,err := uuid.NewV4()
+	key := []byte(v4.String())
+
 	var args [][]byte
 	args = append(args,key)
 	args = append(args,[]byte(data))
@@ -489,11 +490,14 @@ func InvokeInfoByChaincode(data string)(*models.ChaincodeInfo,error){
 	}
 
 	chaincodeInfo :=  &models.ChaincodeInfo{
-		Uuid:    u4.String(),
+		Uuid:    v4.String(),
 		TxId:    string(resp.TransactionID),
 		Time:    time.Now(),
 		Payload: string(resp.Payload),
 	}
+
+	log.Printf("query chaincode tx : %s",resp.TransactionID)
+	log.Printf("result : %v",string(resp.Payload))
 
 	return chaincodeInfo,nil
 }

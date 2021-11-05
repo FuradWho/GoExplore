@@ -8,7 +8,7 @@ client:
     level: info
   # MSP根目录 链接byfn网络时，指定为网络启动后生成的crypto-config文件夹
   cryptoconfig:
-    path: /usr/local/soft/fabric-ca/configtx
+    path: /usr/local/hyper/fabric-ca/configtx
   # 某些SDK支持插件化的KV数据库，通过该属性实现
   credentialStore:
     # 可选，用于用户证书材料存储，如果所有的证书材料被嵌入到配置文件，则不需要
@@ -29,10 +29,9 @@ client:
     #  可选，客户端和peers与orderers进行TLS握手的密钥和证书
     client:
       # 使用byfn中User1@org1的证书
-      keyfile: /usr/local/soft/fabric-ca/org2/peer1/tls-msp/tlscacerts/tls-0-0-0-0-9052.pem
-      certfile: /usr/local/soft/fabric-ca/org2/peer1/tls-msp/tlscacerts/tls-0-0-0-0-9052.pem
+      keyfile: /usr/local/hyper/fabric-ca/org2/ca/crypto/ca-cert.pem
+      certfile: /usr/local/hyper/fabric-ca/org2/ca/crypto/ca-cert.pem
 
-# 如果应用程序已经创建了通道，则不需要这部分
 
 # Fabric区块链网络中参与的组织列表
 organizations:
@@ -49,7 +48,8 @@ organizations:
   org2:
     mspid: org2MSP
     cryptoPath: /usr/local/soft/fabric-ca/org2/ca/crypto/msp
-
+    certificateAuthorities:
+      - rca-org2
     peers:
       - peer1-org2
       - peer2-org2
@@ -62,7 +62,7 @@ organizations:
 # 如果定义了超过一个orderer，SDK使用哪一个orderer由代码实现时指定
 orderers:
   orderer1-org0:
-    url: grpcs://192.168.175.140:7050
+    url: grpcs://192.168.175.140:17050
 
     # 以下属性由gRPC库定义，会被传递给gRPC客户端构造函数
     grpcOptions:
@@ -77,13 +77,13 @@ orderers:
 
     tlsCACerts:
       #证书的绝对路径
-      path: /usr/local/soft/fabric-ca/org0/ca/crypto/ca-cert.pem
+      path: /usr/local/hyper/fabric-ca/org0/ca/crypto/ca-cert.pem
 #peers必须指定Hyperledger Fabric区块链网络中所有peer节点的主机名和端口，可能会在其它地方引用，如channels，organizations等部分。
 peers:
   peer1-org1:
     # 表明使用grpcs协议，设置IP和端口号，使用域名会无法连接
     # url: grpcs://peer0.org1.example.com:7051
-    url: grpcs://192.168.175.140:7051
+    url: grpcs://192.168.175.140:17051
 
     grpcOptions:
       ssl-target-name-override: peer1-org1
@@ -93,10 +93,10 @@ peers:
       fail-fast: false
       allow-insecure: false
     tlsCACerts:
-      path: /usr/local/soft/fabric-ca/org1/ca/crypto/ca-cert.pem
+      path: /usr/local/hyper/fabric-ca/org1/ca/crypto/ca-cert.pem
 
   peer1-org2:
-    url: grpcs://192.168.175.140:9051
+    url: grpcs://192.168.175.140:19051
     grpcOptions:
       ssl-target-name-override: peer1-org2
       keep-alive-time: 0s
@@ -105,7 +105,7 @@ peers:
       fail-fast: false
       allow-insecure: false
     tlsCACerts:
-      path: /usr/local/soft/fabric-ca/org2/ca/crypto/ca-cert.pem
+      path: /usr/local/hyper/fabric-ca/org2/ca/crypto/ca-cert.pem
 
   peer2-org2:
     url: grpcs://192.168.175.140:10051
@@ -117,17 +117,17 @@ peers:
       fail-fast: false
       allow-insecure: false
     tlsCACerts:
-      path: /usr/local/soft/fabric-ca/org2/ca/crypto/ca-cert.pem
+      path: /usr/local/hyper/fabric-ca/org2/ca/crypto/ca-cert.pem
 
 entitymatchers:
   peer:
     - pattern: (\w*)peer1-org1(\w*)
-      urlsubstitutionexp: grpcs://192.168.175.140:7051
+      urlsubstitutionexp: grpcs://192.168.175.140:17051
       ssltargetoverrideurlsubstitutionexp: peer1-org1
       mappedhost: peer1-org1
 
     - pattern: (\w*)peer1-org2(\w*)
-      urlsubstitutionexp: grpcs://192.168.175.140:9051
+      urlsubstitutionexp: grpcs://192.168.175.140:19051
       ssltargetoverrideurlsubstitutionexp: peer1-org2
       mappedhost: peer1-org2
 
@@ -138,6 +138,20 @@ entitymatchers:
 
   orderer:
     - pattern: (\w*)orderer1-org0(\w*)
-      urlsubstitutionexp: 192.168.175.140:7050
+      urlsubstitutionexp: 192.168.175.140:17050
       ssltargetoverrideurlsubstitutionexp: orderer1-org0
       mappedhost: orderer1-org0
+
+certificateAuthorities:
+  rca-org2:
+    url: https://0.0.0.0:17055
+    tlsCACerts:
+      path: /usr/local/hyper/fabric-ca/org2/ca/crypto/ca-cert.pem
+      client:
+        key:
+          path: /usr/local/hyper/fabric-ca/org2/admin/tls-msp/keystore/key.pem
+        cert:
+          path: /usr/local/hyper/fabric-ca/org2/admin/tls-msp/signcerts/cert.pem
+    registrar:
+      enrollId:  rca-org2-admin
+      enrollSecret: rca-org2-adminpw

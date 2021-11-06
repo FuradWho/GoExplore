@@ -13,6 +13,10 @@ client:
   credentialStore:
     # 可选，用于用户证书材料存储，如果所有的证书材料被嵌入到配置文件，则不需要
     path: "/tmp/examplestore"
+#    cryptoStore:
+#      # Specific to the underlying KeyValueStore that backs the crypto key store.
+#      path: /tmp/msp
+
   # 客户端的BCCSP模块配置
   BCCSP:
     security:

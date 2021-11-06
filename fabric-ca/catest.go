@@ -1,21 +1,48 @@
 package fabric_ca
 
 import (
+	"encoding/hex"
 	"fmt"
-	"github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
+	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
+	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
+	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
+	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/msp"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+	"log"
 )
 
+const (
+	Admin = "Admin"
+)
+
+type FabricClient struct {
+	ConnectionFile []byte
+	Orgs []string
+	ChannelId string
+	GoPath string
+
+	userName string
+	userOrg string
+
+	resmgmtClients []*resmgmt.Client
+	sdk *fabsdk.FabricSDK
+	retry resmgmt.RequestOption
+}
+
+
+
 func InitCaClient()  {
-	sdk, err := fabsdk.New(config.FromFile("./connect-config/org2-config.yaml"))
+	sdk, err := fabsdk.New(config.FromFile("./connect-config/User10-config.yaml"))
+
+
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println("???")
 	ctx := sdk.Context()
 
-	client, err := msp.New(ctx)
+	client, err := mspclient.New(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -76,33 +103,32 @@ func InitCaClient()  {
 	//fmt.Println(identity.ID)
 	//
 
-	req := &msp.RegistrationRequest{
-		Name: "User10",
-		Type: "client",
-		CAName: "",
-		Secret: "123456",
-	}
+	//req := &msp.RegistrationRequest{
+	//	Name: "User10",
+	//	Type: "client",
+	//	CAName: "",
+	//	Secret: "123456",
+	//}
+	////
+	//register, err := client.Register(req)
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
 	//
-	register, err := client.Register(req)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println(register)
-
-	err = client.Enroll("User10",msp.WithSecret("123456"))
-	if err != nil {
-		fmt.Println(err)
-	}
-
+	//fmt.Println(register)
+	//
+	//err = client.Enroll("User10",msp.WithSecret("123456"))
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+	//
 	signingIdentity, err := client.GetSigningIdentity("User10")
 	if err != nil {
 		fmt.Printf("GetSigningIdentity : %s \n",err)
 	}
-	fmt.Println(signingIdentity.PrivateKey())
+	fmt.Println(signingIdentity.PrivateKey().SKI())
 
-
-
+	fmt.Println(GetKeyFile(signingIdentity))
 
 	//identity, err := client.GetSigningIdentity("User5")
 	//if err != nil {
@@ -121,6 +147,81 @@ func InitCaClient()  {
 	//
 	//	fmt.Println("----------------------")
 	//}
+}
 
-	
+func (f *FabricClient) Setup() error {
+
+
+	sdk, err := fabsdk.New(config.FromRaw(f.ConnectionFile,"yaml"))
+	if err != nil {
+		log.Printf("Failed to Create SDK : %s \n",err)
+		return err
+	}
+
+	f.sdk = sdk
+
+	resmgmtClients := make([]*resmgmt.Client,0)
+	for _, v := range f.Orgs {
+		resmgmtClient , err := resmgmt.New(sdk.Context(fabsdk.WithOrg(Admin),fabsdk.WithOrg(v)))
+		if err != nil {
+			log.Printf("Failed to create channel management client : %s \n",err)
+		}
+		resmgmtClients = append(resmgmtClients,resmgmtClient)
+	}
+
+	f.resmgmtClients = resmgmtClients
+
+	f.retry = resmgmt.WithRetry(retry.DefaultResMgmtOpts)
+
+	return nil
+
+}
+
+func (f *FabricClient) Close()  {
+	if f.sdk != nil {
+		f.sdk.Close()
+	}
+}
+
+func (f *FabricClient) SetUser(userName , userOrg string)  {
+	f.userName = userName
+	f.userOrg = userOrg
+}
+
+
+func GetKeyFile(id msp.SigningIdentity) (string,string){
+
+	priFile := hex.EncodeToString(id.PrivateKey().SKI())+"_sk"
+	pubFile := id.Identifier().ID + "@" +id.Identifier().MSPID + "-cert.pem"
+	return priFile,pubFile
+}
+
+func (f *FabricClient) CreateChannel(channelTx string) error {
+
+	mspClient , err := mspclient.New(f.sdk.Context(),mspclient.WithOrg(f.Orgs[0]))
+	if err != nil {
+		log.Printf("Failed to new mspClient : %s \n",err)
+		return err
+	}
+
+	adminidentity, err := mspClient.GetSigningIdentity(Admin)
+	if err != nil {
+		log.Printf("Failed to get signIdentity : %s \n",err)
+		return err
+	}
+
+	req := resmgmt.SaveChannelRequest{
+		ChannelID: f.ChannelId,
+		ChannelConfigPath: channelTx,
+		SigningIdentities: []msp.SigningIdentity{adminidentity},
+	}
+
+	txId , err := f.resmgmtClients[0].SaveChannel(req,f.retry)
+	if err != nil {
+		log.Printf("Failed to save channel : %s \n",err)
+		return err
+	}
+
+	fmt.Printf("txId : %s \n",txId)
+	return nil
 }

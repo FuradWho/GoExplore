@@ -37,12 +37,10 @@ type FabricClient struct {
 
 func InitCaClient()  {
 	sdk, err := fabsdk.New(config.FromFile("./connect-config/User10-config.yaml"))
-
-
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("???")
+
 	ctx := sdk.Context()
 
 	client, err := mspclient.New(ctx)
@@ -86,9 +84,8 @@ func InitCaClient()  {
 
 	fmt.Println(info.CAName)
 	fmt.Println(info.Version)
-	fmt.Println(info.CAChain)
-	fmt.Println(info.IssuerPublicKey)
-	fmt.Println(info.IssuerRevocationPublicKey)
+
+
 
 	//identity, err := client.CreateIdentity(&msp.IdentityRequest{ID: "123", Affiliation: "org2",
 	//	Attributes: []msp.Attribute{{Name: "attName1", Value: "attValue1"}}})

@@ -1,7 +1,7 @@
 version: 1.0.0
 
 client:
-  organization: org1
+  organization: org2
   logging:
     level: info
 
@@ -24,8 +24,10 @@ client:
 
   tlsCerts:
     systemCertPool: true
-      keyfile: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/Admin@org1/tls-msp/keystore/key.pem
-      certfile: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/Admin@org1/tls-msp/signcerts/cert.pem
+    client:
+      keyfile: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/{username}@org1/tls-msp/keystore/key.pem
+      certfile: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/{username}@org1/tls-msp/signcerts/cert.pem
+
 channels:
   channeltest:
     orderers:
@@ -56,7 +58,7 @@ channels:
 organizations:
   org1:
     mspid: org1MSP
-    cryptoPath:  /usr/local/hyper/test2/configtx/org1/msp
+    cryptoPath:  /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/{username}@org1/msp
     peers:
       - peer1-org1
       - peer2-org1
@@ -65,7 +67,7 @@ organizations:
 
   org2:
     mspid: Org2MSP
-    cryptoPath:  /usr/local/hyper/test2/configtx/org2/msp
+    cryptoPath:  /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/users/{username}@org1/msp
     peers:
       - peer1-org2
       - peer2-org2
@@ -74,7 +76,7 @@ organizations:
 
   org0:
     mspID: org0MSP
-    cryptoPath: /usr/local/hyper/test2/configtx/org0/msp
+    cryptoPath: /usr/local/hyper/test2/crypto-config/ordererOrganizations/org0/admin/msp
 
 orderers:
   orderer1-org0:
@@ -171,12 +173,13 @@ certificateAuthorities:
   ca-org2:
     url: https://0.0.0.0:17055
     tlsCACerts:
-      path: /usr/local/hyper/test2/configtx/org2/msp/tlscacerts/tls-0-0-0-0-17052.pem
+      path: /usr/local/hyper/test2/crypto-config/peerOrganizations/org2/ca/ca-cert.pem
       client:
         key:
           path: /usr/local/hyper/test2/configtx/org2/msp/keystore/key.pem
         cert:
           path: /usr/local/hyper/test2/configtx/org2/msp/signcerts/cert.pem
+
     registrar:
       enrollId:  ca-org2-admin
       enrollSecret: ca-org2-adminpw
@@ -184,12 +187,13 @@ certificateAuthorities:
   ca-org1:
     url: https://0.0.0.0:17054
     tlsCACerts:
-      path: /usr/local/hyper/test2/configtx/org1/msp/tlscacerts/tls-0-0-0-0-17052.pem
+      path: /usr/local/hyper/test2/crypto-config/peerOrganizations/org1/ca/ca-cert.pem
       client:
         key:
           path: /usr/local/hyper/test2/configtx/org1/msp/keystore/key.pem
         cert:
           path: /usr/local/hyper/test2/configtx/org1/msp/signcerts/cert.pem
+
     registrar:
       enrollId: ca-org1-admin
-      enrollSecret: ca-org1-dminpw
+      enrollSecret: ca-org1-adminpw

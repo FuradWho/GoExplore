@@ -177,7 +177,7 @@ organizations:
     mspid: org1MSP
 
     # This org's MSP store (absolute path or relative to client.cryptoconfig)
-    cryptoPath:  /usr/local/soft/fabric-ca/org1/ca/crypto/msp
+    cryptoPath:  /usr/local/hyper/fabric-ca/configtx/org1/msp
 
     peers:
       - peer1-org1
@@ -199,7 +199,7 @@ organizations:
     mspid: Org2MSP
 
     # This org's MSP store (absolute path or relative to client.cryptoconfig)
-    cryptoPath:  /usr/local/soft/fabric-ca/org2/ca/crypto/msp
+    cryptoPath:  /usr/local/hyper/fabric-ca/configtx/org2/msp
 
     peers:
       - peer1-org2
@@ -214,7 +214,7 @@ organizations:
     mspID: org0MSP
 
     # Needed to load users crypto keys and certs for this org (absolute path or relative to global crypto path, DEV mode)
-    cryptoPath: /usr/local/soft/fabric-ca/org0/ca/crypto/msp
+    cryptoPath: /usr/local/hyper/fabric-ca/configtx/org0/msp
 
 
 #

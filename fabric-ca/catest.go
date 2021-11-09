@@ -125,7 +125,7 @@ func InitCaClient()  {
 	//	fmt.Println(err)
 	//}
 	//
-	signingIdentity, err := client.GetSigningIdentity("User10")
+	signingIdentity, err := client.GetSigningIdentity("admin-org2")
 	if err != nil {
 		fmt.Printf("GetSigningIdentity : %s \n",err)
 	}

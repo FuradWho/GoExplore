@@ -1,25 +1,20 @@
 package main
 
 import (
-	"fmt"
-	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
-	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
-	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/msp"
-	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
-	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-	"log"
-	"strings"
+	"goExplore/common"
+	localConfig "goExplore/config"
+	"goExplore/controller"
 )
 
 func main() {
 	// start a new chain explore service
- 	// common.InitChainExploreService(localConfig.OrgGoConfig, localConfig.OrgGo, localConfig.Admin, localConfig.User)
+	 common.InitChainExploreService(localConfig.OrgGoConfig, localConfig.OrgGo, localConfig.Admin, localConfig.User)
 	//start the web controller
 	// common.WalletTest()
 	// time.Sleep(100000)
 	// common.InvokeInfoByChaincode("dsa312dsd3")
 	// common.QueryInfoByChaincode("a9465920-70c0-4317-b636-7f9baece61d2")
-	// controller.StartIris()
+	 controller.StartIris()
 
 	//fabric_ca.InitCaClient()
 
@@ -42,52 +37,49 @@ func main() {
 	 */
 
 
-	sdkClient , err := fabsdk.New(config.FromFile("connect-config/channel-connection.yaml"))
-	if err != nil {
-		log.Panicf("Failed to create a sdkClient :%s \n",err)
-
-	}
-	resourceProvider := sdkClient.Context(fabsdk.WithUser("User1"),fabsdk.WithOrg("org2"))
-
-	resourceClient , err := resmgmt.New(resourceProvider)
-	if err != nil {
-		log.Panicf("Failed to create a resourceClient : %s \n",err)
-	}
-
-
-	mspClient , err := mspclient.New(sdkClient.Context(),mspclient.WithOrg("org2"))
-	if err != nil {
-		log.Printf("Failed to new mspClient : %s \n",err)
-	}
-
-	adminidentity, err := mspClient.GetSigningIdentity("User2")
-	if err != nil {
-		log.Printf("Failed to get signIdentity : %s \n",err)
-	}
-
-	channelTx := "/usr/local/hyper/test2/configtx/channel-artifacts/mychannel.tx"
-	channelId := "mychannel"
-
-	req := resmgmt.SaveChannelRequest{
-		ChannelID: channelId,
-		ChannelConfigPath: channelTx,
-		SigningIdentities: []msp.SigningIdentity{adminidentity},
-	}
-
-	txId , err := resourceClient.SaveChannel(req)
-	if err != nil {
-		log.Printf("Failed to save channel : %s \n",err)
-	}
-
-	fmt.Println(txId)
-
-	err = resourceClient.JoinChannel(channelId,resmgmt.WithTargetEndpoints("peer1-org2"))
-	if err != nil && !strings.Contains(err.Error(), "LedgerID already exists") {
-		log.Printf("Org peers failed to JoinChannel: %s \n", err)
-	}
+	//sdkClient , err := fabsdk.New(config.FromFile("connect-config/channel-connection.yaml"))
+	//if err != nil {
+	//	log.Panicf("Failed to create a sdkClient :%s \n",err)
+	//
+	//}
+	//resourceProvider := sdkClient.Context(fabsdk.WithUser("User2"),fabsdk.WithOrg("org2"))
+	//
+	//resourceClient , err := resmgmt.New(resourceProvider)
+	//if err != nil {
+	//	log.Panicf("Failed to create a resourceClient : %s \n",err)
+	//}
 
 
+	//mspClient , err := mspclient.New(sdkClient.Context(),mspclient.WithOrg("org1"))
+	//if err != nil {
+	//	log.Printf("Failed to new mspClient : %s \n",err)
+	//}
 
+	//adminidentity, err := mspClient.GetSigningIdentity("User2")
+	//if err != nil {
+	//	log.Printf("Failed to get signIdentity : %s \n",err)
+	//}
+
+	//channelTx := "/usr/local/hyper/test2/configtx/channel-artifacts/mychannel.tx"
+	// channelId := "mychannel"
+	//
+	//req := resmgmt.SaveChannelRequest{
+	//	ChannelID: channelId,
+	//	ChannelConfigPath: channelTx,
+	//	SigningIdentities: []msp.SigningIdentity{adminidentity},
+	//}
+	//
+	//txId , err := resourceClient.SaveChannel(req)
+	//if err != nil {
+	//	log.Printf("Failed to save channel : %s \n",err)
+	//}
+	//
+	//fmt.Println(txId)
+
+	//err = resourceClient.JoinChannel(channelId)
+	//if err != nil && !strings.Contains(err.Error(), "LedgerID already exists") {
+	//	log.Printf("Org peers failed to JoinChannel: %s \n", err)
+	//}
 
  	//sdk, err := fabsdk.New(config.FromFile("connect-config/channel-connection.yaml"))
 	//if err != nil {
@@ -158,10 +150,10 @@ func main() {
 	//attributes = append(attributes,a1,a2,a3,a4,a5,a6,a7)
 	//
 	//req := &mspclient.RegistrationRequest{
-	//	Name: "User1",
+	//	Name: "User2",
 	//	Type: "admin",
 	//	CAName: "ca-org2",
-	//	Secret: "User1",
+	//	Secret: "User2",
 	//	Attributes: attributes,
 	//	Affiliation: "org2",
 	//}
@@ -172,16 +164,21 @@ func main() {
 	//
 	//fmt.Println(register)
 	//
-	//err = client.Enroll("User1",mspclient.WithSecret("User1"))
+	//err = client.Enroll("User2",mspclient.WithSecret("User2"))
 	//if err != nil {
 	//	fmt.Println(err)
 	//}
 	//
-	//signingIdentity, err := client.GetSigningIdentity("User1")
+	//signingIdentity, err := client.GetSigningIdentity("User2")
 	//if err != nil {
 	//	fmt.Printf("GetSigningIdentity : %s \n",err)
 	//}
 	//fmt.Println(signingIdentity.Identifier().ID)
+
+	//p, err := peer.New()
+	//if err != nil {
+	//	return
+	//}
 
 
 }

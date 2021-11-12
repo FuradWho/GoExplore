@@ -464,6 +464,8 @@ func QueryInfoByChaincode(uuid string)(*models.ChaincodeInfo,error){
 	log.Printf("query chaincode tx : %s",resp.TransactionID)
 	log.Printf("result : %v",string(resp.Payload))
 
+
+
 	return chaincodeInfo,nil
 
 }
@@ -477,6 +479,8 @@ func InvokeInfoByChaincode(data string)(*models.ChaincodeInfo,error){
 	args = append(args,key)
 	args = append(args,[]byte(data))
 
+	log.Printf("uuid : %v",string(key))
+
 	req := channel.Request{
 		ChaincodeID: localConfig.ChaincodeID,
 		Fcn: "set",
@@ -489,15 +493,22 @@ func InvokeInfoByChaincode(data string)(*models.ChaincodeInfo,error){
 		return nil, err
 	}
 
+	transaction, err := QueryTxByTxId(string(resp.TransactionID))
+	if err != nil {
+		return nil, err
+	}
+
 	chaincodeInfo :=  &models.ChaincodeInfo{
 		Uuid:    v4.String(),
 		TxId:    string(resp.TransactionID),
 		Time:    time.Now(),
 		Payload: string(resp.Payload),
+		TransactionInfo: *transaction,
 	}
 
 	log.Printf("query chaincode tx : %s",resp.TransactionID)
 	log.Printf("result : %v",string(resp.Payload))
+
 
 	return chaincodeInfo,nil
 }

@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type ChaincodeInfo struct {
 
@@ -8,4 +10,5 @@ type ChaincodeInfo struct {
 	TxId string `json:"txId"`
 	Time time.Time `json:"time"`
 	Payload string `json:"payload"`
+	TransactionInfo Transaction `json:"transactionInfo"`
 }
